@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+
+
+    <script src="lib/handlebars-v4.0.4.js"></script>
+    <script src="lib/jquery-1.11.3.min.js"></script>
+    <script src="data/inspections-json-properties.json"></script>
+
+    <title>Food Service Inspections Refactored</title>
+
+    <!-- Bootstrap -->
+    <link href="lib/bootstrap.min.css" rel="stylesheet">
+
+
+
+  </head>
+  <body>
+    <h1>Hello, world!</h1>
+
+    <div class="container">
+      <div class="col-sm-12">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Name</th>
+        			<th class="hidden-sm hidden-xs">Type</th>
+        			<th class="hidden-xs">Address</th>
+        			<th>City</th>
+            </tr>
+          </thead>
+          <tbody id="tb">
+
+
+          </tbody>
+        </table>
+        <nav>
+          <ul class="pagination pagination-lg" id="paginationListItems">
+
+          </ul>
+        </nav>
+
+      </div>
+    </div>
+
+
+
+<script id="facility-rows" type="text/x-handlebars-template">
+  {{#inspections}}
+  <tr class="facility">
+    <th class="facilityName">{{Name}}</th>
+    <th class="hidden-sm hidden-xs">{{Type}}</th>
+    <th class="hidden-xs">{{Address}}</th>
+    <th>{{City}}</th>
+  </tr>
+  {{/inspections}}
+
+</script>
+
+<script id="pagination-template" type="text/x-handlebars-template">
+
+    {{#if back}}
+    <li id="pageBackButton">
+      <a aria-label="Previous">
+        <span aria-hidden="true">&laquo;</span>
+      </a>
+    </li>
+    {{/if}}
+    {{#pages}}
+      <li class="pageButton {{#activePage}} active {{/activePage}}"><a href="#">{{pageIndex}}</a></li>
+    {{/pages}}
+    {{#if forward}}
+    <li id="pageForwardButton">
+      <a href="#" aria-label="Next">
+      <span aria-hidden="true">&raquo;</span>
+      </a>
+    </li>
+    {{/if}}
+
+</script>
+
+
+
+<script>
+
+function getIndexs(pageNumber) {
+  var startIndex, endIndex, indexes;
+  endIndex = parseInt(pageNumber) * 10;
+  startIndex = endIndex - 10;
+  var indexes = {"begin": startIndex, "end": endIndex}
+  return indexes
+}
+
+function renderFacilities(pageNumber){
+  var indexes = 0,
+      facilitiesScript,
+      inspections,
+      template;
+  var indexes = getIndexs(pageNumber);
+  var facilitiesScript = $('#facility-rows').html();
+  var inspections = { "inspections": dataSet.inspections.slice(indexes.begin, indexes.end)}
+  var template = Handlebars.compile(facilitiesScript);
+  $('#tb').html(template(inspections));
+  renderPagination(pageNumber);
+  $(".facility").click(function(){
+    console.log($(this).find("th.facilityName").text());
+
+  })
+
+}
+
+function renderPagination(pageNumber){
+  var numberFacilities = dataSet.inspections.length,
+      totalPages = 0,
+      remainder = 0,
+      paginationData = {"back": false, "pages": [], "forward": true};
+
+  var remainder = dataSet.inspections.length % 10
+      //console.log(remainder)
+  if (remainder == 0) {
+      totalPages = (dataSet.inspections.length / 10);
+  } else totalPages = (Math.floor(dataSet.inspections.length / 10) + 1);
+  console.log(pageNumber, totalPages)
+  if (pageNumber > 1) {  paginationData.back = true };
+  if (pageNumber == totalPages) { paginationData.forward = false };
+
+  for (i = 1; i <= totalPages; i++){
+    paginationButton = {"pageIndex": i, "activePage": false};
+    if (i == pageNumber){paginationButton.activePage = true};
+    paginationData.pages.push(paginationButton);
+  }
+
+  var paginationScript = $('#pagination-template').html();
+  var pTemplate = Handlebars.compile(paginationScript);
+  $('#paginationListItems').html(pTemplate(paginationData));
+  //console.log(paginationData)
+
+  $(".pageButton").click(function(){
+    var newPage;
+    //console.log($(this).text())
+    //console.log(typeof($(this).text()))
+    newPage = parseInt($(this).text());
+    renderFacilities(newPage);
+    //renderPagination(newPage);
+  })
+  $("#pageBackButton").click(function(){
+    var newPage;
+    newPage = parseInt($("li.active").text()) - 1;
+    console.log(newPage);
+    renderFacilities(newPage)
+  })
+
+  $("#pageForwardButton").click(function(){
+    var newPage;
+    newPage = parseInt($("li.active").text()) + 1;
+    renderFacilities(newPage)
+  })
+
+}
+
+$(function (){
+
+    renderFacilities(1);
+    renderPagination(1);
+
+})
+
+
+
+</script>
+
+
+
+  </body>
+</html>
