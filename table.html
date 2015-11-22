@@ -23,26 +23,11 @@
     <h1>Hello, world!</h1>
 
     <div class="container">
-      <div class="col-sm-12">
-        <table class="table table-hover">
-          <thead>
-            <tr>
-              <th>Name</th>
-        			<th class="hidden-sm hidden-xs">Type</th>
-        			<th class="hidden-xs">Address</th>
-        			<th>City</th>
-            </tr>
-          </thead>
-          <tbody id="tb">
+      <div class="col-sm-12" id="tb">
 
+      </div>
 
-          </tbody>
-        </table>
-        <nav>
-          <ul class="pagination pagination-lg" id="paginationListItems">
-
-          </ul>
-        </nav>
+      <div class="col-xs-12" id="paginationListItems">
 
       </div>
     </div>
@@ -50,19 +35,33 @@
 
 
 <script id="facility-rows" type="text/x-handlebars-template">
-  {{#inspections}}
-  <tr class="facility">
-    <th class="facilityName">{{Name}}</th>
-    <th class="hidden-sm hidden-xs">{{Type}}</th>
-    <th class="hidden-xs">{{Address}}</th>
-    <th>{{City}}</th>
-  </tr>
-  {{/inspections}}
+  <table class="table table-hover" id="tb">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th class="hidden-sm hidden-xs">Type</th>
+        <th class="hidden-xs">Address</th>
+        <th>City</th>
+      </tr>
+    </thead>
+    <tbody>
+    {{#inspections}}
+    <tr class="facility">
+      <th class="facilityName">{{Name}}</th>
+      <th class="hidden-sm hidden-xs">{{Type}}</th>
+      <th class="hidden-xs">{{Address}}</th>
+      <th>{{City}}</th>
+    </tr>
+    {{/inspections}}
+    </tbody>
+  </table>
+
 
 </script>
 
 <script id="pagination-template" type="text/x-handlebars-template">
-
+  <nav>
+    <ul class="pagination pagination-lg">
     {{#if back}}
     <li id="pageBackButton">
       <a aria-label="Previous">
@@ -80,12 +79,68 @@
       </a>
     </li>
     {{/if}}
+    </ul>
+  </nav>
+
+
+</script>
+
+<script id="inspection-template" type="text/x-handlebars-template">
+
+
+  <div class="row">
+    <div class="col-xs-12">
+      {{Name}}
+    </div>
+  </div>
+
+  {{#Inspections}}
+
+  <div clas="row">
+    <div class="col-md-3">
+      {{Date}}
+    </div>
+    <div class="col-md-3">
+      {{Inspection}}
+    </div>
+    <div class="col-md-3">
+      {{Critical}}
+    </div>
+    <div class="col-md-3">
+      {{Total}}
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-12">
+      {{Details}}
+    </div>
+  </div>
+  {{/Inspections}}
 
 </script>
 
 
-
 <script>
+function renderInspections(facility) {
+  var facilityInspections = {"Name": facility, "Inspections": []};
+
+  for (i = 0; i < dataSet.inspections.length; i++){
+      if (dataSet.inspections[i].Name == facility){
+
+        facilityInspections.Inspections.push(dataSet.inspections[i])
+
+      }
+    }
+
+  console.log(facilityInspections)
+  var inspectionsScript = $('#inspection-template').html();
+  var inspectionsTemplate = Handlebars.compile(inspectionsScript);
+  $('#tb').html(inspectionsTemplate(facilityInspections));
+
+
+
+}
+
 
 function getIndexs(pageNumber) {
   var startIndex, endIndex, indexes;
@@ -107,7 +162,7 @@ function renderFacilities(pageNumber){
   $('#tb').html(template(inspections));
   renderPagination(pageNumber);
   $(".facility").click(function(){
-    console.log($(this).find("th.facilityName").text());
+    renderInspections($(this).find("th.facilityName").text());
 
   })
 
@@ -124,7 +179,7 @@ function renderPagination(pageNumber){
   if (remainder == 0) {
       totalPages = (dataSet.inspections.length / 10);
   } else totalPages = (Math.floor(dataSet.inspections.length / 10) + 1);
-  console.log(pageNumber, totalPages)
+  //console.log(pageNumber, totalPages)
   if (pageNumber > 1) {  paginationData.back = true };
   if (pageNumber == totalPages) { paginationData.forward = false };
 
